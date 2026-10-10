@@ -1,58 +1,39 @@
 <template>
   <section id="events" class="section">
     <div class="container">
-      <span class="section-label">06 / Community & Speaking</span>
-      <h2 class="section-title">Events & Speaking</h2>
-      <p class="section-subtitle">
-        Staying connected with the global engineering community — as a participant,
-        speaker, and organizer.
-      </p>
+      <div class="section-head">
+        <span class="section-label" v-reveal="'up'">04 / Community</span>
+        <h2 class="section-title" v-reveal:100="'blur'">Events & <span class="gradient-text">community</span></h2>
+        <p class="section-subtitle" v-reveal:200="'up'">
+          Staying connected with the engineering community as a volunteer, participant and learner.
+        </p>
+      </div>
 
-      <div class="events-grid">
-        <div
-          v-for="(event, idx) in events"
-          :key="event.id"
-          class="event-card card animate-fade-up"
-          :class="`delay-${Math.min(idx + 1, 4)}`"
-        >
-          <!-- Event photo -->
-          <div class="event-photo-wrap">
-            <img
-              :src="getEventPhoto(event.photo)"
-              :alt="`${event.name} photo`"
-              class="event-photo"
-              loading="lazy"
-              @error="onImgError"
-            />
-            <!-- Role badge overlaid on photo -->
-            <span class="event-role-badge" :class="event.role.toLowerCase()">
-              {{ event.role }}
-            </span>
-          </div>
-
-          <div class="event-body">
-            <div class="event-meta">
-              <span class="event-date">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12">
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                  <line x1="16" y1="2" x2="16" y2="6"/>
-                  <line x1="8" y1="2" x2="8" y2="6"/>
-                  <line x1="3" y1="10" x2="21" y2="10"/>
-                </svg>
-                {{ event.date }}
-              </span>
-              <span class="event-location">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="12" height="12">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                  <circle cx="12" cy="10" r="3"/>
-                </svg>
-                {{ event.location }}
-              </span>
+      <div class="events-grid" ref="gridEl">
+        <div v-for="(event, idx) in events" :key="event.id" class="event-slot" :class="`e${idx % 3}`" v-reveal:[idx*120]="'up'">
+          <article class="card event-card" v-tilt="8">
+            <div class="event-photo-wrap">
+              <img
+                :src="getEventPhoto(event.photo)"
+                :alt="`${event.name} photo`"
+                class="event-photo"
+                :style="{ transform: `translate3d(0, ${offsets[idx] || 0}px, 0) scale(1.18)` }"
+                loading="lazy"
+                @error="onImgError"
+              />
+              <div class="photo-shade"></div>
+              <span class="event-role glass">{{ event.role }}</span>
             </div>
-
-            <h3 class="event-name">{{ event.name }}</h3>
-            <p class="event-desc">{{ event.description }}</p>
-          </div>
+            <div class="event-body">
+              <div class="event-meta">
+                <span>{{ event.date }}</span>
+                <span class="dot-sep"></span>
+                <span>{{ event.location }}</span>
+              </div>
+              <h3 class="event-name">{{ event.name }}</h3>
+              <p class="event-desc">{{ event.description }}</p>
+            </div>
+          </article>
         </div>
       </div>
     </div>
@@ -60,153 +41,109 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from "vue";
 import { events } from "../assets/data/portfolio.js";
+import { prefersReducedMotion } from "../lib/motion.js";
+
+const FALLBACK = "https://placehold.co/600x340/0a0c1a/8b6cff?text=Event";
 
 function getEventPhoto(filename) {
-  if (!filename) return "https://placehold.co/600x340/0d1117/334155?text=Event";
-  try {
-    return new URL(`../assets/events/${filename}`, import.meta.url).href;
-  } catch {
-    return "https://placehold.co/600x340/0d1117/334155?text=Event";
-  }
+  if (!filename) return FALLBACK;
+  return new URL(`../assets/events/${filename}`, import.meta.url).href;
+}
+function onImgError(e) {
+  e.target.src = FALLBACK;
 }
 
-function onImgError(e) {
-  e.target.src = "https://placehold.co/600x340/0d1117/334155?text=Event";
+// Inner-image parallax
+const gridEl = ref(null);
+const offsets = ref([]);
+function onScroll() {
+  if (!gridEl.value) return;
+  const vh = window.innerHeight;
+  offsets.value = [...gridEl.value.querySelectorAll(".event-photo-wrap")].map((wrap) => {
+    const r = wrap.getBoundingClientRect();
+    const center = (r.top + r.height / 2 - vh / 2) / vh; // -1..1 while on screen
+    return Math.max(Math.min(center, 1), -1) * -24;
+  });
 }
+
+onMounted(() => {
+  if (prefersReducedMotion) return;
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+});
+onUnmounted(() => window.removeEventListener("scroll", onScroll));
 </script>
 
 <style scoped>
 .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+  align-items: start;
 }
+.event-slot { display: flex; }
+.event-slot.e1 { margin-top: 4rem; }
+.event-slot.e2 { margin-top: 2rem; }
 
 .event-card {
+  width: 100%;
   padding: 0;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  border-radius: var(--radius-lg);
 }
-
-/* Photo */
 .event-photo-wrap {
   position: relative;
-  width: 100%;
-  /* Preserve aspect ratio, fill available width */
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: var(--bg-elevated);
 }
-
 .event-photo {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--transition-slow);
-  display: block;
+  transition: filter var(--transition-slow);
+  filter: saturate(0.9);
 }
-.event-card:hover .event-photo {
-  transform: scale(1.04);
-}
-
-/* Overlay gradient on photo */
-.event-photo-wrap::after {
-  content: "";
+.event-card:hover .event-photo { filter: saturate(1.15); }
+.photo-shade {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 50%;
-  background: linear-gradient(to top, var(--bg-card), transparent);
-  pointer-events: none;
+  inset: 0;
+  background: linear-gradient(to top, rgba(5, 6, 15, 0.75), transparent 55%);
 }
-
-.event-role-badge {
+.event-role {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  z-index: 2;
+  top: 1rem;
+  left: 1rem;
   font-family: var(--font-mono);
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 0.25em 0.7em;
-  border-radius: 20px;
-  font-weight: 500;
-}
-.event-role-badge.attendee {
-  background: rgba(88, 166, 255, 0.85);
   color: #fff;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
 }
-.event-role-badge.speaker {
-  background: rgba(57, 197, 207, 0.90);
-  color: #0d1117;
-}
-.event-role-badge.organizer,
-.event-role-badge.organizer\ \&\ speaker {
-  background: rgba(210, 153, 34, 0.90);
-  color: #0d1117;
-}
-
-.event-role-badge.volunteer {
-  background: rgba(46, 160, 67, 0.90); /* green */
-  color: #fff;
-}
-
-.event-role-badge.participant {
-  background: rgba(139, 92, 246, 0.90); /* purple */
-  color: #fff;
-}
-
-.event-role-badge.organizer-speaker {
-  background: rgba(210, 153, 34, 0.90);
-  color: #0d1117;
-}
-
-/* Body */
-.event-body {
-  padding: 1.25rem 1.5rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  flex: 1;
-}
-
+.event-body { padding: 1.5rem 1.6rem 1.75rem; }
 .event-meta {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.event-date,
-.event-location {
-  display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.6rem;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--text-muted);
+  font-size: 0.7rem;
+  color: var(--accent-cyan);
+  margin-bottom: 0.6rem;
 }
+.dot-sep { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+.event-name { font-size: 1.2rem; line-height: 1.25; margin-bottom: 0.7rem; }
+.event-desc { font-size: 0.86rem; color: var(--text-secondary); line-height: 1.65; }
 
-.event-name {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  line-height: 1.3;
+@media (max-width: 900px) {
+  .events-grid { grid-template-columns: 1fr 1fr; }
+  .event-slot.e1, .event-slot.e2 { margin-top: 0; }
 }
-
-.event-desc {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.65;
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-  .events-grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 600px) {
+  .events-grid { grid-template-columns: 1fr; }
 }
 </style>

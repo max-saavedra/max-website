@@ -1,19 +1,24 @@
 <template>
-  <!-- Theme wrapper: data-theme attribute drives CSS custom properties -->
-  <div :data-theme="theme" id="app-root">
-    <!-- Background decorative elements -->
-    <div class="bg-grid" aria-hidden="true"></div>
+  <div id="app-root">
+    <IntroLoader />
+    <WebGLBackground />
+    <div class="cursor-glow" ref="glow" aria-hidden="true"></div>
 
     <NavBar :theme="theme" @toggle-theme="toggleTheme" />
 
     <main>
       <HeroSection />
+      <SkillsMarquee />
       <ExperienceSection />
       <ProjectsSection />
       <SkillsSection />
-      <BlogSection />
       <EventsSection />
-      <SocialProofSection />
+      <!--
+        Hidden until there is real content (data in portfolio.js is placeholder):
+        <BlogSection />
+        <SocialProofSection />
+        Re-enable by uncommenting here, importing them below and adding them to navItems in NavBar.vue.
+      -->
       <ContactSection />
     </main>
 
@@ -22,66 +27,77 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
+import { ref, watch, onMounted, onUnmounted, defineAsyncComponent } from "vue";
+import IntroLoader from "./components/IntroLoader.vue";
 import NavBar from "./components/NavBar.vue";
 import HeroSection from "./components/HeroSection.vue";
+import SkillsMarquee from "./components/SkillsMarquee.vue";
 import ExperienceSection from "./components/ExperienceSection.vue";
 import ProjectsSection from "./components/ProjectsSection.vue";
 import SkillsSection from "./components/SkillsSection.vue";
-import BlogSection from "./components/BlogSection.vue";
 import EventsSection from "./components/EventsSection.vue";
-import SocialProofSection from "./components/SocialProofSection.vue";
 import ContactSection from "./components/ContactSection.vue";
 import FooterSection from "./components/FooterSection.vue";
 
-// Persist theme preference in localStorage
-const THEME_KEY = "portfolio-theme";
+// Three.js is heavy: load the 3D scene in its own chunk so content paints first
+const WebGLBackground = defineAsyncComponent(() => import("./components/WebGLBackground.vue"));
 
+const THEME_KEY = "portfolio-theme";
 const theme = ref("dark");
 
 function toggleTheme() {
   theme.value = theme.value === "dark" ? "light" : "dark";
 }
 
-// Apply theme to document root so global.css tokens activate
 watch(theme, (val) => {
   document.documentElement.setAttribute("data-theme", val);
-  localStorage.setItem(THEME_KEY, val);
+  try { localStorage.setItem(THEME_KEY, val); } catch { /* storage unavailable */ }
 });
 
+// Cursor spotlight (desktop only)
+const glow = ref(null);
+function onPointer(e) {
+  if (glow.value) glow.value.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+}
+
 onMounted(() => {
-  // Load saved preference or detect system preference
-  const saved = localStorage.getItem(THEME_KEY);
-  if (saved) {
-    theme.value = saved;
-  } else if (window.matchMedia("(prefers-color-scheme: light)").matches) {
-    theme.value = "light";
-  }
+  let saved = null;
+  try { saved = localStorage.getItem(THEME_KEY); } catch { /* storage unavailable */ }
+  if (saved) theme.value = saved;
   document.documentElement.setAttribute("data-theme", theme.value);
+  window.addEventListener("pointermove", onPointer, { passive: true });
 });
+onUnmounted(() => window.removeEventListener("pointermove", onPointer));
 </script>
 
 <style>
-/* Scoped to app-root — the main layout container */
 #app-root {
   min-height: 100vh;
   position: relative;
-  background-color: var(--bg-base);
-  transition: background-color var(--transition-slow);
+  /* clip (not hidden) so off-screen reveal transforms never cause sideways scroll and sticky still works */
+  overflow-x: clip;
 }
 
-/* Subtle dot-grid background pattern */
-.bg-grid {
-  position: fixed;
-  inset: 0;
-  background-image: radial-gradient(circle, var(--border-subtle) 1px, transparent 1px);
-  background-size: 32px 32px;
-  pointer-events: none;
-  z-index: 0;
-}
-
-main {
+main, footer {
   position: relative;
+  z-index: 2;
+}
+
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 600px;
+  margin: -300px 0 0 -300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-violet) 16%, transparent), transparent 60%);
+  pointer-events: none;
   z-index: 1;
+  transition: transform 0.25s var(--ease-out);
+  will-change: transform;
+}
+@media (pointer: coarse) {
+  .cursor-glow { display: none; }
 }
 </style>

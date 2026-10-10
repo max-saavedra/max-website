@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "lenis": "^1.3.26",
+    "three": "^0.186.1",
     "vue": "^3.4.0"
   },
   "devDependencies": {

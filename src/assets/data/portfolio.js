@@ -11,6 +11,9 @@
 // ---------------------------------------------------------------------------
 export const personal = {
   name: "Max Bruno Saavedra Monterrey",
+  shortName: "Max Saavedra", // Big name shown in the hero
+  // Rotating headline in the hero (scramble animation)
+  roles: ["Software Engineer", "AI Specialist", "Computer Vision Researcher", "Automation Engineer"],
   title: "Software Engineer",
   specialization: "Specializing in AI",
   tagline: "Building scalable systems at the intersection of theory and practice.",
@@ -36,8 +39,7 @@ export const personal = {
 export const social = {
   github: "https://github.com/max-saavedra",
   linkedin: "https://linkedin.com/in/max-saavedra",
-  facebook: "https://facebook.com/666Max666j",
-  instagram: "https://instagram.com/max.s.m_666",
+  blog: "https://max-saavedra-se.blogspot.com/",
   orcid: "https://orcid.org/0009-0003-7066-2499",
 };
 

@@ -1,152 +1,115 @@
 <template>
   <section id="experience" class="section">
     <div class="container">
-      <!-- Section header -->
-      <span class="section-label">02 / Experience & Research</span>
-      <h2 class="section-title">Where Theory Meets Practice</h2>
-      <p class="section-subtitle">
-        Professional roles and research contributions that shaped my engineering perspective.
-      </p>
+      <div class="section-head">
+        <span class="section-label" v-reveal="'up'">01 / Experience & Research</span>
+        <h2 class="section-title" v-reveal:100="'blur'">Where theory <span class="gradient-text">meets practice</span></h2>
+        <p class="section-subtitle" v-reveal:200="'up'">
+          Professional roles and research contributions that shaped my engineering perspective.
+        </p>
+      </div>
 
       <div class="exp-layout">
-        <!-- Left: Work Experience -->
-        <div class="exp-column">
-          <h3 class="column-heading">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-            </svg>
-            Professional Experience
-          </h3>
+        <!-- Timeline -->
+        <div class="timeline" ref="timelineEl">
+          <div class="timeline-rail"><div class="timeline-fill" :style="{ transform: `scaleY(${fill})` }"></div></div>
 
-          <div class="timeline">
-            <div
-              v-for="(item, idx) in experience"
-              :key="item.id"
-              class="timeline-item animate-fade-up"
-              :class="`delay-${Math.min(idx + 1, 4)}`"
-            >
-              <!-- Timeline dot -->
-              <div class="timeline-dot"></div>
-
-              <div class="card timeline-card">
-                <div class="exp-header">
-                  <div>
-                    <h4 class="exp-role">{{ item.role }}</h4>
-                    <p class="exp-company">
-                      {{ item.company }}
-                      <span class="exp-location">— {{ item.location }}</span>
-                    </p>
-                  </div>
-                  <span class="exp-period">{{ item.period }}</span>
-                </div>
-
-                <p class="exp-desc">{{ item.description }}</p>
-
-                <ul class="achievement-list">
-                  <li v-for="(ach, i) in item.achievements" :key="i" class="achievement-item">
-                    <svg viewBox="0 0 16 16" fill="none" width="12" height="12" class="ach-icon">
-                      <path d="M2 8l4 4 8-8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                    {{ ach }}
-                  </li>
-                </ul>
-
-                <div class="exp-tech">
-                  <span v-for="tech in item.tech" :key="tech" class="tag">{{ tech }}</span>
-                </div>
+          <div v-for="(item, idx) in experience" :key="item.id" class="timeline-item" v-reveal:[idx*120]="'left'">
+            <div class="timeline-node"><span></span></div>
+            <article class="card exp-card" v-tilt="4">
+              <div class="exp-header">
+                <span class="exp-period">{{ item.period }}</span>
+                <span class="exp-index">0{{ idx + 1 }}</span>
               </div>
-            </div>
+              <h3 class="exp-role">{{ item.role }}</h3>
+              <p class="exp-company">{{ item.company }}</p>
+              <p class="exp-location">{{ item.location }}</p>
+              <p class="exp-desc">{{ item.description }}</p>
+              <ul class="achievement-list">
+                <li v-for="(ach, i) in item.achievements" :key="i">
+                  <span class="ach-bullet"></span>{{ ach }}
+                </li>
+              </ul>
+              <div class="tags">
+                <span v-for="tech in item.tech" :key="tech" class="tag">{{ tech }}</span>
+              </div>
+            </article>
           </div>
         </div>
 
-        <!-- Right: Research & Publications -->
-        <div class="exp-column">
-          <h3 class="column-heading">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
-              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
-              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
-            </svg>
-            Research & Publications
-          </h3>
+        <!-- Research (sticky) -->
+        <aside class="research-col">
+          <div class="research-sticky">
+            <h3 class="column-heading" v-reveal="'up'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+              </svg>
+              Research & Publications
+            </h3>
 
-          <div class="publications-list">
-            <div
-              v-for="(pub, idx) in publications"
-              :key="pub.id"
-              class="card pub-card animate-fade-up"
-              :class="`delay-${Math.min(idx + 1, 4)}`"
-            >
-              <!-- Type badge -->
-              <span class="pub-type-badge" :class="pub.type">
-                {{ pub.type === "paper" ? "Peer-reviewed" : "Technical Whitepaper" }}
-              </span>
-
-              <h4 class="pub-title">{{ pub.title }}</h4>
-
-              <p class="pub-authors">{{ pub.authors }}</p>
-
-              <p class="pub-venue">
-                <em>{{ pub.venue }}</em>, {{ pub.year }}
-              </p>
-
-              <p class="pub-abstract">{{ pub.abstract }}</p>
-
-              <div class="pub-footer">
-                <div class="pub-tags">
+            <div v-for="(pub, idx) in publications" :key="pub.id" v-reveal:[idx*120]="'right'">
+              <article class="card pub-card" v-tilt="6">
+                <div class="pub-glow" aria-hidden="true"></div>
+                <span class="pub-badge">{{ pub.type === "paper" ? "Peer-reviewed · " + pub.year : "Whitepaper" }}</span>
+                <h4 class="pub-title">{{ pub.title }}</h4>
+                <p class="pub-authors">{{ pub.authors }}</p>
+                <p class="pub-venue"><em>{{ pub.venue }}</em></p>
+                <p class="pub-abstract">{{ pub.abstract }}</p>
+                <div class="tags">
                   <span v-for="tag in pub.tags" :key="tag" class="tag">{{ tag }}</span>
                 </div>
-                <a v-if="pub.doi" :href="pub.doi" target="_blank" rel="noopener" class="btn btn-ghost pub-doi">
+                <a v-if="pub.doi" :href="pub.doi" target="_blank" rel="noopener" class="btn btn-primary btn-sm pub-doi">
+                  Read the paper
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                    <polyline points="15 3 21 3 21 9"/>
-                    <line x1="10" y1="14" x2="21" y2="3"/>
+                    <path d="M7 17L17 7M7 7h10v10"/>
                   </svg>
-                  View Paper
                 </a>
-              </div>
+              </article>
             </div>
 
-            <!-- Placeholder if no publications yet -->
-            <div v-if="publications.length === 0" class="card pub-placeholder">
-              <p class="text-muted">
-                Research in progress. Check back soon or visit my
-                <a :href="social.github" target="_blank" rel="noopener">GitHub</a>
-                for technical documentation.
+            <div v-if="publications.length === 0" class="card">
+              <p class="muted">
+                Research in progress. Check my
+                <a :href="social.github" target="_blank" rel="noopener">GitHub</a> meanwhile.
               </p>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted } from "vue";
 import { experience, publications, social } from "../assets/data/portfolio.js";
+
+// Scroll-linked progress for the timeline rail
+const timelineEl = ref(null);
+const fill = ref(0);
+
+function onScroll() {
+  const el = timelineEl.value;
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const start = window.innerHeight * 0.7;
+  const p = (start - r.top) / r.height;
+  fill.value = Math.min(Math.max(p, 0), 1);
+}
+
+onMounted(() => {
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+});
+onUnmounted(() => window.removeEventListener("scroll", onScroll));
 </script>
 
 <style scoped>
 .exp-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
+  grid-template-columns: 1.2fr 1fr;
+  gap: clamp(2rem, 5vw, 4rem);
   align-items: start;
-}
-
-.column-heading {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-family: var(--font-body);
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  margin-bottom: 1.75rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border-subtle);
 }
 
 /* Timeline */
@@ -154,177 +117,160 @@ import { experience, publications, social } from "../assets/data/portfolio.js";
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 2rem;
+  padding-left: 2.75rem;
 }
-.timeline::before {
-  content: "";
+.timeline-rail {
   position: absolute;
-  left: 10px;
-  top: 12px;
-  bottom: 12px;
-  width: 1px;
-  background: linear-gradient(to bottom, var(--accent-blue), transparent);
-  opacity: 0.3;
+  left: 11px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--border-default);
+  border-radius: 2px;
+  overflow: hidden;
 }
-
-.timeline-item {
-  position: relative;
-  padding-left: 2rem;
+.timeline-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, var(--accent-violet), var(--accent-cyan), var(--accent-pink));
+  transform-origin: top;
+  box-shadow: 0 0 12px var(--accent-cyan);
 }
-
-.timeline-dot {
+.timeline-item { position: relative; }
+.timeline-node {
   position: absolute;
-  left: 6px;
-  top: 1.4rem;
-  width: 9px;
-  height: 9px;
+  left: calc(-2.75rem + 2px);
+  top: 1.6rem;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: var(--accent-blue);
-  border: 2px solid var(--bg-base);
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-  z-index: 1;
+  display: grid;
+  place-items: center;
+  background: var(--bg-base);
+  border: 2px solid var(--accent-cyan);
+  box-shadow: 0 0 18px -2px var(--accent-cyan);
+}
+.timeline-node span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
 }
 
-.timeline-card { padding: 1.25rem 1.5rem; }
-
+.exp-card { padding: 1.75rem; }
 .exp-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.75rem;
-}
-
-.exp-role {
-  font-family: var(--font-body);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 0.2rem;
-}
-.exp-company {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-}
-.exp-location {
-  color: var(--text-muted);
-  font-size: 0.82rem;
+  align-items: center;
+  margin-bottom: 0.9rem;
 }
 .exp-period {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--text-muted);
-  white-space: nowrap;
-  flex-shrink: 0;
+  color: var(--accent-cyan);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-cyan) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-cyan) 25%, transparent);
 }
-
-.exp-desc {
-  font-size: 0.875rem;
-  color: var(--text-secondary);
-  line-height: 1.65;
-  margin-bottom: 0.85rem;
+.exp-index {
+  font-family: var(--font-display);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--border-default);
 }
+.exp-role { font-size: 1.45rem; margin-bottom: 0.35rem; }
+.exp-company { font-weight: 500; color: var(--text-primary); font-size: 0.95rem; }
+.exp-location { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.9rem; }
+.exp-desc { font-size: 0.92rem; color: var(--text-secondary); margin-bottom: 1rem; }
 
 .achievement-list {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
-}
-.achievement-item {
-  display: flex;
-  align-items: flex-start;
   gap: 0.5rem;
-  font-size: 0.83rem;
-  color: var(--text-secondary);
-  line-height: 1.5;
+  margin-bottom: 1.25rem;
 }
-.ach-icon {
-  color: var(--accent-green);
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.exp-tech {
+.achievement-list li {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
-}
-
-/* Publications */
-.publications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.pub-card { padding: 1.5rem; }
-
-.pub-type-badge {
-  display: inline-block;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 0.2em 0.65em;
-  border-radius: 20px;
-  margin-bottom: 0.85rem;
-}
-.pub-type-badge.paper {
-  background: rgba(88, 166, 255, 0.10);
-  color: var(--accent-blue);
-  border: 1px solid rgba(88, 166, 255, 0.20);
-}
-.pub-type-badge.whitepaper {
-  background: rgba(57, 197, 207, 0.10);
-  color: var(--accent-cyan);
-  border: 1px solid rgba(57, 197, 207, 0.20);
-}
-
-.pub-title {
-  font-family: var(--font-display);
-  font-size: 1.1rem;
-  color: var(--text-primary);
-  margin-bottom: 0.4rem;
-  line-height: 1.35;
-}
-.pub-authors {
-  font-size: 0.82rem;
-  color: var(--accent-blue);
-  margin-bottom: 0.25rem;
-}
-.pub-venue {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  margin-bottom: 0.75rem;
-}
-.pub-abstract {
+  gap: 0.7rem;
   font-size: 0.875rem;
   color: var(--text-secondary);
-  line-height: 1.65;
+  line-height: 1.55;
+}
+.ach-bullet {
+  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  margin-top: 0.5em;
+  border-radius: 2px;
+  background: var(--gradient-brand);
+  transform: rotate(45deg);
+}
+.tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+/* Research */
+.research-col { align-self: stretch; }
+.research-sticky {
+  position: sticky;
+  top: calc(var(--nav-h) + 2rem);
+}
+.column-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
+}
+.pub-card {
+  overflow: hidden;
+  padding: 2rem;
+}
+.pub-glow {
+  position: absolute;
+  top: -40%;
+  right: -30%;
+  width: 70%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent-pink) 35%, transparent), transparent 70%);
+  filter: blur(30px);
+  z-index: -1;
+  animation: pulse 6s ease-in-out infinite;
+}
+@keyframes pulse { 50% { transform: scale(1.3); opacity: 0.6; } }
+.pub-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-pink);
   margin-bottom: 1rem;
 }
-
-.pub-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
+.pub-title {
+  font-size: 1.35rem;
+  line-height: 1.25;
+  margin-bottom: 0.75rem;
 }
-.pub-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
-.pub-doi { font-size: 0.78rem; padding: 0.4rem 0.85rem; }
+.pub-authors { font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 0.2rem; }
+.pub-venue { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; }
+.pub-abstract { font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.25rem; }
+.pub-doi { margin-top: 1.5rem; }
+.muted { color: var(--text-muted); }
 
-.pub-placeholder p { color: var(--text-muted); font-size: 0.9rem; }
-
-/* Responsive */
 @media (max-width: 900px) {
-  .exp-layout {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
+  .exp-layout { grid-template-columns: 1fr; }
+  .research-sticky { position: static; }
+  .timeline { padding-left: 2.25rem; }
+  .timeline-node { left: calc(-2.25rem + 2px); }
 }
 </style>

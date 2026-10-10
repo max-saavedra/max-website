@@ -1,182 +1,333 @@
 <template>
-  <section id="projects" class="section projects-bg">
-    <div class="container">
-      <span class="section-label">03 / Engineering Excellence</span>
-      <h2 class="section-title">Selected Projects</h2>
-      <p class="section-subtitle">
-        Chosen for architectural depth. Each project reflects a deliberate design
-        decision, not just a working implementation.
-      </p>
-
-      <div class="projects-grid">
-        <article
-          v-for="(project, idx) in featuredProjects"
-          :key="project.id"
-          class="card project-card animate-fade-up"
-          :class="`delay-${Math.min(idx + 1, 4)}`"
-        >
-          <!-- Card top bar with project number -->
-          <div class="project-top">
-            <span class="project-num">{{ String(idx + 1).padStart(2, "0") }}</span>
-            <div class="project-links">
-              <a
-                v-if="project.github"
-                :href="project.github"
-                target="_blank"
-                rel="noopener"
-                class="btn btn-ghost link-btn"
-                :aria-label="`${project.name} source code`"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
-                  <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-                </svg>
-                Code
-              </a>
-              <a
-                v-if="project.demo"
-                :href="project.demo"
-                target="_blank"
-                rel="noopener"
-                class="btn btn-primary link-btn"
-                :aria-label="`${project.name} live demo`"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-                  <polyline points="15 3 21 3 21 9"/>
-                  <line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-                Demo
-              </a>
-            </div>
-          </div>
-
-          <h3 class="project-name">{{ project.name }}</h3>
-
-          <!-- "Why" context — the insight -->
-          <blockquote class="project-why">
-            <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" class="why-icon">
-              <path fill-rule="evenodd" d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0zm-7-4a1 1 0 1 1-2 0 1 1 0 0 1 2 0zM9 9a1 1 0 0 0 0 2v3a1 1 0 0 0 1 1h1a1 1 0 1 0 0-2v-3a1 1 0 0 0-1-1H9z" clip-rule="evenodd"/>
-            </svg>
-            {{ project.why }}
-          </blockquote>
-
-          <p class="project-desc">{{ project.description }}</p>
-
-          <!-- Tech stack tags -->
-          <div class="project-stack">
-            <span v-for="tech in project.stack" :key="tech" class="tag">{{ tech }}</span>
-          </div>
-        </article>
+  <section
+    id="projects"
+    ref="sectionEl"
+    class="projects"
+    :class="{ pinned }"
+    :style="pinned ? { height: `${sectionHeight}px` } : null"
+  >
+    <div class="sticky">
+      <div class="container head-row">
+        <div class="section-head">
+          <span class="section-label" v-reveal="'up'">02 / Engineering</span>
+          <h2 class="section-title" v-reveal:100="'blur'">Selected <span class="gradient-text">projects</span></h2>
+          <p class="section-subtitle" v-reveal:200="'up'">
+            Chosen for architectural depth. Each one reflects a deliberate design decision, not just a working implementation.
+          </p>
+        </div>
+        <div v-if="pinned" class="progress-counter" aria-hidden="true">
+          <span class="current">{{ String(currentIdx + 1).padStart(2, "0") }}</span>
+          <span class="bar"><span :style="{ transform: `scaleX(${progress})` }"></span></span>
+          <span class="total">{{ String(featuredProjects.length).padStart(2, "0") }}</span>
+        </div>
       </div>
 
-      <!-- View all on GitHub -->
-      <div class="projects-footer animate-fade-up delay-4">
-        <a :href="social.github" target="_blank" rel="noopener" class="btn btn-ghost">
-          <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.604-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-          </svg>
-          View all repositories on GitHub
-        </a>
+      <div class="track-viewport">
+        <div class="track" ref="trackEl" :style="pinned ? { transform: `translate3d(${-progress * distance}px,0,0)` } : null">
+          <div
+            v-for="(project, idx) in featuredProjects"
+            :key="project.id"
+            class="slot"
+            v-reveal:[idx*80]="'up'"
+          >
+            <article class="card project-card" v-tilt="7">
+              <div class="project-visual" :style="{ '--h': idx * 70 }">
+                <div class="visual-grid"></div>
+                <span class="visual-num">{{ String(idx + 1).padStart(2, "0") }}</span>
+                <div class="visual-orb"></div>
+              </div>
+
+              <div class="project-body">
+                <h3 class="project-name">{{ project.name }}</h3>
+                <p class="project-why">
+                  <span class="why-label">Why</span>{{ project.why }}
+                </p>
+                <p class="project-desc">{{ project.description }}</p>
+                <div class="project-stack">
+                  <span v-for="tech in project.stack" :key="tech" class="tag">{{ tech }}</span>
+                </div>
+                <div class="project-links">
+                  <a v-if="project.github" :href="project.github" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+                    <SocialIcon name="github" :size="14" /> Code
+                  </a>
+                  <a v-if="project.demo" :href="project.demo" target="_blank" rel="noopener" class="btn btn-primary btn-sm">
+                    Live demo
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M7 17L17 7M7 7h10v10"/></svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- End card -->
+          <div class="slot slot-end" v-reveal="'scale'">
+            <a :href="social.github" target="_blank" rel="noopener" class="card end-card" v-tilt="10">
+              <SocialIcon name="github" :size="56" />
+              <span class="end-title">More on GitHub</span>
+              <span class="end-sub">Explore every repository →</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, onMounted, onUnmounted, nextTick } from "vue";
 import { projects, social } from "../assets/data/portfolio.js";
+import { prefersReducedMotion } from "../lib/motion.js";
+import SocialIcon from "./SocialIcon.vue";
 
-// Only show featured projects (3-4 max)
-const featuredProjects = computed(() =>
-  projects.filter((p) => p.featured).slice(0, 4)
+const featuredProjects = computed(() => projects.filter((p) => p.featured).slice(0, 4));
+
+// --- Pinned horizontal scroll (desktop only) --------------------------------
+const sectionEl = ref(null);
+const trackEl = ref(null);
+const pinned = ref(false);
+const distance = ref(0);
+const sectionHeight = ref(0);
+const progress = ref(0);
+
+const currentIdx = computed(() =>
+  Math.min(Math.round(progress.value * (featuredProjects.value.length - 1)), featuredProjects.value.length - 1)
 );
+
+function measure() {
+  pinned.value = window.innerWidth >= 900 && !prefersReducedMotion;
+  if (!pinned.value) return;
+  nextTick(() => {
+    const track = trackEl.value;
+    if (!track) return;
+    distance.value = Math.max(track.scrollWidth - window.innerWidth, 0);
+    sectionHeight.value = window.innerHeight + distance.value;
+    onScroll();
+  });
+}
+
+function onScroll() {
+  if (!pinned.value || !sectionEl.value) return;
+  const top = sectionEl.value.getBoundingClientRect().top;
+  progress.value = distance.value > 0 ? Math.min(Math.max(-top / distance.value, 0), 1) : 0;
+}
+
+let ro;
+onMounted(() => {
+  measure();
+  window.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("resize", measure);
+  ro = new ResizeObserver(measure);
+  if (trackEl.value) ro.observe(trackEl.value);
+  document.fonts?.ready.then(measure);
+});
+onUnmounted(() => {
+  window.removeEventListener("scroll", onScroll);
+  window.removeEventListener("resize", measure);
+  ro?.disconnect();
+});
 </script>
 
 <style scoped>
-.projects-bg {
-  background: linear-gradient(to bottom, transparent, var(--bg-surface), transparent);
+.projects {
+  position: relative;
+  padding: var(--section-pad) 0;
+}
+.projects.pinned { padding: 0; }
+.pinned .sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  padding-top: calc(var(--nav-h) + 1rem);
+}
+.pinned .section-head { margin-bottom: 1.25rem; }
+.pinned .section-subtitle { font-size: 0.98rem; }
+.pinned .section-title { font-size: clamp(2.4rem, 5vw, 3.8rem); }
+
+.head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 2rem;
 }
 
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 460px), 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2.5rem;
+.progress-counter {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-bottom: 2.25rem;
+  flex-shrink: 0;
 }
+.progress-counter .current { color: var(--text-primary); font-size: 1.1rem; }
+.progress-counter .bar {
+  width: 120px;
+  height: 2px;
+  background: var(--border-default);
+  overflow: hidden;
+  border-radius: 2px;
+}
+.progress-counter .bar span {
+  display: block;
+  height: 100%;
+  background: var(--gradient-brand);
+  transform-origin: left;
+}
+
+/* Track */
+.track {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 clamp(1rem, 4vw, 2rem);
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+.pinned .track {
+  flex-direction: row;
+  width: max-content;
+  max-width: none;
+  margin: 0;
+  gap: 2rem;
+  padding: 1rem max(2rem, calc((100vw - var(--container-max)) / 2 + 2rem));
+  will-change: transform;
+}
+
+.pinned .slot { width: min(560px, 42vw); flex-shrink: 0; }
+.pinned .slot-end { width: 320px; }
+.slot { display: flex; }
 
 .project-card {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
-  padding: 1.75rem;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+  border-radius: var(--radius-lg);
 }
+.pinned .project-card { height: clamp(360px, calc(100vh - 340px), 600px); }
 
-.project-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Generated visual header */
+.project-visual {
+  position: relative;
+  height: 160px;
+  flex-shrink: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 30%, hsl(calc(260 + var(--h)) 90% 60% / 0.55), transparent 55%),
+    radial-gradient(circle at 80% 70%, hsl(calc(190 + var(--h)) 95% 55% / 0.5), transparent 55%),
+    linear-gradient(135deg, hsl(calc(250 + var(--h)) 60% 12%), hsl(calc(220 + var(--h)) 60% 8%));
+  border-bottom: 1px solid var(--glass-border);
 }
-
-.project-num {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+.visual-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+  animation: gridMove 8s linear infinite;
 }
-
-.project-links {
-  display: flex;
-  gap: 0.5rem;
-}
-.link-btn {
-  font-size: 0.78rem;
-  padding: 0.35rem 0.85rem;
-}
-
-.project-name {
+@keyframes gridMove { to { background-position: 28px 28px; } }
+.visual-num {
+  position: absolute;
+  right: 1.25rem;
+  bottom: -1.2rem;
   font-family: var(--font-display);
-  font-size: 1.5rem;
-  color: var(--text-primary);
-  line-height: 1.2;
+  font-weight: 700;
+  font-size: 7rem;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255,255,255,0.45);
+}
+.visual-orb {
+  position: absolute;
+  left: 1.5rem;
+  top: 50%;
+  width: 64px;
+  height: 64px;
+  margin-top: -32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #fff, hsl(calc(200 + var(--h)) 95% 60%) 40%, hsl(calc(270 + var(--h)) 80% 40%));
+  box-shadow: 0 0 40px hsl(calc(200 + var(--h)) 95% 60% / 0.7);
+  animation: orb 6s ease-in-out infinite;
+}
+@keyframes orb {
+  50% { transform: translate3d(14px, -8px, 0) scale(1.1); }
 }
 
-/* Context quote */
-.project-why {
+.project-body {
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
-  font-size: 0.83rem;
-  color: var(--accent-cyan);
-  border-left: 2px solid var(--accent-cyan);
-  padding: 0.5rem 0.85rem;
-  background: rgba(57, 197, 207, 0.05);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 1.6rem 1.75rem 1.75rem;
+  flex: 1;
+  min-height: 0;
+}
+.project-name { font-size: 1.45rem; line-height: 1.2; }
+.project-why {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
   font-style: italic;
   line-height: 1.55;
-  margin: 0;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--accent-cyan);
 }
-.why-icon {
-  flex-shrink: 0;
-  margin-top: 2px;
+.why-label {
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
   color: var(--accent-cyan);
+  margin-right: 0.5rem;
 }
-
 .project-desc {
-  font-size: 0.875rem;
+  font-size: 0.88rem;
   color: var(--text-secondary);
-  line-height: 1.7;
-  flex: 1;
+  line-height: 1.65;
 }
+.pinned .project-desc {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.pinned .project-why { flex-shrink: 0; }
+.project-stack { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; }
+.project-links { display: flex; gap: 0.6rem; }
 
-.project-stack {
+/* End card */
+.end-card {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: auto;
-}
-
-.projects-footer {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+  min-height: 240px;
+  text-decoration: none;
+  color: var(--text-primary);
+  border-radius: var(--radius-lg);
   text-align: center;
-  padding-top: 1rem;
+}
+.pinned .end-card { height: clamp(360px, calc(100vh - 340px), 600px); }
+.end-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; }
+.end-sub { font-size: 0.85rem; color: var(--accent-cyan); }
+
+@media (max-width: 899px) {
+  .head-row { display: block; }
+}
+/* Short laptop screens: drop the secondary text so the pinned cards fit */
+@media (max-height: 820px) {
+  .pinned .project-why, .pinned .section-subtitle { display: none; }
+  .pinned .project-visual { height: 110px; }
 }
 </style>
