@@ -28,7 +28,7 @@ export const personal = {
   ],
   interests: "Hiking the Andes, Chess, and Sci-Fi enthusiast.",
   // Paths relative to /src/assets/profile/
-  profilePhoto: "profile.png",
+  profilePhoto: "profile.jpg",
   petPhoto: "pet.jpg",
   cvFile: `${import.meta.env.BASE_URL}assets/cv/cv.pdf`, // Place your CV PDF in /src/assets/cv/
 };
